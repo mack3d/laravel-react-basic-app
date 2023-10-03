@@ -7,23 +7,38 @@ export default function Users() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
   const { setNotification } = useStateContext();
+  const [page, setPage] = useState(1);
+  const [meta, setMeta] = useState([]);
 
   useEffect(() => {
     getUsers();
-  }, []);
+  }, [page]);
 
   const getUsers = () => {
     setLoading(true);
     axiosClient
-      .get("/users")
+      .get(`/users?page=${page}`)
       .then(({ data }) => {
         console.log(data);
         setLoading(false);
         setUsers(data.data);
+        setMeta(data.meta);
       })
       .catch(() => {
         setLoading(false);
       });
+  };
+
+  const nextPage = () => {
+    if (meta.last_page !== meta.current_page) {
+      setPage(page + 1);
+    }
+  };
+
+  const prevPage = () => {
+    if (page > 1) {
+      setPage(page - 1);
+    }
   };
 
   const onDelete = (u) => {
@@ -52,6 +67,18 @@ export default function Users() {
       <div className="card animated fedeInDown">
         <table>
           <thead>
+            <tr>
+              <th colSpan={4}></th>
+              <th>
+                <button onClick={prevPage} className="btn">
+                  prev
+                </button>
+                &nbsp;
+                <button onClick={nextPage} className="btn">
+                  next
+                </button>
+              </th>
+            </tr>
             <tr>
               <th>ID</th>
               <th>Name</th>
